@@ -142,7 +142,7 @@ int intersect(Ray ray, out float t, out vec3 normal, out Material mat) {
 Ray generateRay(vec2 uv) {
     vec2 p = uv * 2. - 1.;
     
-    vec3 camPos = vec3(50., 40.8, 169.);
+    vec3 camPos = vec3(50., 40.8, 172.);
 	vec3 cz = normalize(vec3(50., 40., 81.6) - camPos);
 	vec3 cx = vec3(1., 0., 0.);
 	vec3 cy = normalize(cross(cx, cz)); 
@@ -199,6 +199,7 @@ vec3 trace(Ray ray) {
             float into = float(dot(n, nl) > 0.);	 // 光线是否从外部进来
             float ddn = dot(nl, ray.dir);
             float nnt = mix(ior, 1. / ior, into);
+            vec3 rdir = reflect(ray.dir, n);
             float cos2t = 1. - nnt * nnt * (1. - ddn * ddn);
             if (cos2t > 0.) {		// 是否发生Total Internal Reflection
                 // 算出折射光线的方向
@@ -214,12 +215,13 @@ vec3 trace(Ray ray) {
                 // Russain roulette
                 if (rand() < P) {				// 选择反射
                     reflectance *= RP;
-                    ray.dir = reflect(ray.dir, n);
+                    ray.dir = rdir;
                 } else { 				        // 选择折射
                     reflectance *= color * TP; 
                     ray.dir = tdir; 
                 }
-            }
+            } else
+                ray.dir = rdir;
         }
         
         // 将光线往前推进一点，防止自相交
